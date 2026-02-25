@@ -41,7 +41,6 @@ def main():
     # Call the Gmail API
     service = build("gmail", "v1", credentials=creds)
    
-
   except HttpError as error:
     print(f"An error occurred: {error}")
 
