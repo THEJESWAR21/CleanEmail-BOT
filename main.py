@@ -1,4 +1,5 @@
 import os.path
+import drafts
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -7,7 +8,9 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 # If modifying these scopes, delete the file token.json.
-SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
+SCOPES = ["https://www.googleapis.com/auth/gmail.compose"]
+
+
 
 
 def main():
@@ -32,24 +35,19 @@ def main():
     # Save the credentials for the next run
     with open("token.json", "w") as token:
       token.write(creds.to_json())
+      print("Token File Generated!!!!")
 
   try:
     # Call the Gmail API
     service = build("gmail", "v1", credentials=creds)
-    results = service.users().labels().list(userId="me").execute()
-    labels = results.get("labels", [])
-
-    if not labels:
-      print("No labels found.")
-      return
-    print("Labels:")
-    for label in labels:
-      print(label["name"])
+   
 
   except HttpError as error:
-    # TODO(developer) - Handle errors from gmail API.
     print(f"An error occurred: {error}")
+
+  return creds
 
 
 if __name__ == "__main__":
-  main()
+  creds = main()
+  drafts.create_draft(creds)
