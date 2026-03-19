@@ -18,7 +18,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 # Choosing a Scope
-SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
+SCOPES = ['https://www.googleapis.com/auth/gmail.settings.basic']
 
 # readonly - View your Emails and Messages
 
@@ -47,21 +47,42 @@ def main():
     try:
         """ Call the Gmail API """
 
-        # Creates a Authorzied Gmail API Client service object using the credentails
         service = build("gmail", "v1", credentials=creds)
 
-        # The result object contains a "labels" list
-        results = service.users().labels().list(userId="me").execute()
+        label_name = "IMPORTANT"
+        filter_content = {
+            "criteria": {"query": "PISSBABY"},
+            "action": {
+                "addLabelIds": [label_name],
+                "removeLabelIds": ["INBOX"],
+            },
+        }
 
-        # Extracts a list of labels from a dictionary named results
-        labels = results.get("labels", [])
 
-        if not labels:
-            print("No Labels found.")
-            return
-        print("Labels:")
-        for label in labels:
-            print(label)
+        result = (
+            service.users()
+            .settings()
+            .filters()
+            .create(userId="me", body=filter_content)
+            .execute()
+        )
+        print(f'Created Filter with id: {result.get("id")}')
+
+        # # Creates a Authorzied Gmail API Client service object using the credentails
+        # service = build("gmail", "v1", credentials=creds)
+
+        # # The result object contains a "labels" list
+        # results = service.users().labels().list(userId="me").execute()
+
+        # # Extracts a list of labels from a dictionary named results
+        # labels = results.get("labels", [])
+
+        # if not labels:
+        #     print("No Labels found.")
+        #     return
+        # print("Labels:")
+        # for label in labels:
+        #     print(label)
 
     # Checks for Errors
     except HttpError as error:
