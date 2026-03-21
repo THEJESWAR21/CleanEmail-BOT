@@ -18,7 +18,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 # Choosing a Scope
-SCOPES = ['https://www.googleapis.com/auth/gmail.settings.basic']
+SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
 
 # readonly - View your Emails and Messages
 
@@ -43,46 +43,56 @@ def main():
         with open("token.json", "w") as token:
             token.write(creds.to_json())
 
+    
+    body2 = {
+        "removeLabelIds": ['INBOX'],
+        "addLabelIds": ['IMPORTANT']
+    }
+
         
     try:
         """ Call the Gmail API """
 
         service = build("gmail", "v1", credentials=creds)
-
-        label_name = "IMPORTANT"
-        filter_content = {
-            "criteria": {"query": "PISSBABY"},
-            "action": {
-                "addLabelIds": [label_name],
-                "removeLabelIds": ["INBOX"],
-            },
-        }
-
-
-        result = (
+        results = (
             service.users()
-            .settings()
-            .filters()
-            .create(userId="me", body=filter_content)
+            .messages()
+            .list(userId="me", labelIds=["INBOX"])  
             .execute()
         )
-        print(f'Created Filter with id: {result.get("id")}')
+        messages = results.get("messages", [])
 
-        # # Creates a Authorzied Gmail API Client service object using the credentails
-        # service = build("gmail", "v1", credentials=creds)
+        if not messages:
+            print("No Messages Found.")
+            return
+        
+        print("Messages: ")
+        for message in messages:
+            print(f"message ID: {message["id"]}")
+            msg = (
+                service.users()
+                .messages()
+                .get(userId="me", id=message["id"])
+                .execute()
+            )
 
-        # # The result object contains a "labels" list
-        # results = service.users().labels().list(userId="me").execute()
+            if msg["snippet"] == "BIG BIG BALLS":
+                result = (
+                    service.users()
+                    .messages()
+                    .modify(
+                        userId = "me",
+                        id = msg["id"],
+                        body = body2
+                    )
+                    .execute()
+                )
+                print("MODIFYED SUCCESFULLY")
 
-        # # Extracts a list of labels from a dictionary named results
-        # labels = results.get("labels", [])
 
-        # if not labels:
-        #     print("No Labels found.")
-        #     return
-        # print("Labels:")
-        # for label in labels:
-        #     print(label)
+            print(f' Subject: {msg["snippet"]}')
+
+
 
     # Checks for Errors
     except HttpError as error:
