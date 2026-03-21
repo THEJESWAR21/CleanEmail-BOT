@@ -67,6 +67,7 @@ def main():
             return
         
         print("Messages: ")
+
         for message in messages:
             print(f"message ID: {message["id"]}")
             msg = (
@@ -76,21 +77,38 @@ def main():
                 .execute()
             )
 
-            if msg["snippet"] == "BIG BIG BALLS":
-                result = (
-                    service.users()
-                    .messages()
-                    .modify(
-                        userId = "me",
-                        id = msg["id"],
-                        body = body2
-                    )
-                    .execute()
-                )
-                print("MODIFYED SUCCESFULLY")
+            email_data = msg["payload"]["headers"]
+            for values in email_data:
 
+                name = values["name"]
+                if name == "From":
+                    email =  values["value"]
 
-            print(f' Subject: {msg["snippet"]}')
+                    if email == "Neon Blue <itsrazetitan@gmail.com>":
+                        updated = (
+                            service.users()
+                            .messages()
+                            .modify(
+                                userId = "me",
+                                id = msg["id"],
+                                body = body2
+                            )
+                            .execute()
+                        )
+                        print("MODIFIED SUCESSFULLY")
+
+            # if msg["snippet"] == "BIG BIG BALLS":
+            #     result = (
+            #         service.users()
+            #         .messages()
+            #         .modify(
+            #             userId = "me",
+            #             id = msg["id"],
+            #             body = body2
+            #         )
+            #         .execute()
+            #     )
+            #     print("MODIFYED SUCCESFULLY")
 
 
 
