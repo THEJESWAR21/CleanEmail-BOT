@@ -46,7 +46,7 @@ def main():
     
     body2 = {
         "removeLabelIds": ['INBOX'],
-        "addLabelIds": ['IMPORTANT']
+        "addLabelIds": ['Label_906954676064142011']
     }
 
         
